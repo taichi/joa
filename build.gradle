@@ -1,0 +1,72 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.3.3'
+    compile 'com.netflix.rxjava:rxjava-string:0.18.3'
+
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'de.undercouch:gradle-download-task:1.0'
+    }
+}
+
+apply plugin: 'download-task'
+import de.undercouch.gradle.tasks.download.Download
+
+task getSrcs
+
+// see.
+//    http://hg.openjdk.java.net/jdk6/jdk6/hotspot/tags
+//    http://hg.openjdk.java.net/jdk7u/jdk7u/hotspot/tags
+//    http://hg.openjdk.java.net/jdk8u/jdk8u/hotspot/tags
+
+task downloadjava6(type: Download) {
+	src "http://hg.openjdk.java.net/jdk6/jdk6/hotspot/archive/tip.zip"
+	dest new File(buildDir, "jdk6tip.zip")
+}
+task downloadjava7(type: Download) {
+	src "http://hg.openjdk.java.net/jdk7u/jdk7u60/hotspot/archive/tip.zip"
+	dest new File(buildDir, "jdk7tip.zip")
+}
+task downloadjava8(type: Download) {
+	src "http://hg.openjdk.java.net/jdk8u/jdk8u/hotspot/archive/tip.zip"
+	dest new File(buildDir, "jdk8tip.zip")
+}
+
+["java6", "java7", "java8"].each { ver ->
+	def dep = tasks["download$ver"]
+	task "extract$ver"(dependsOn: dep, type: Copy) {
+		from zipTree(dep.dest)
+		def n = dep.dest.name
+		into new File("$projectDir/$ver",  n.substring(0, n.lastIndexOf('.')))
+	}
+	getSrcs.dependsOn "extract$ver"
+}
+
+task analyzeOptions(type: JavaExec) {
+	main = "jvmoptions.OptionAnalyzer"
+	classpath = sourceSets.main.runtimeClasspath
+}
+analyzeOptions.shouldRunAfter getSrcs
+
+defaultTasks 'getSrcs', 'analyzeOptions'
+
+sourceCompatibility = targetCompatibility = 1.8
+
+eclipse {
+	classpath {
+		containers = [
+			'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+		]
+	}
+}

@@ -1,0 +1,10 @@
+.gradle/
+*.classpath
+*.project
+.settings/
+build/
+bin/
+java6/
+java7/
+java8/
+result/
