@@ -35,7 +35,7 @@ task downloadjava6(type: Download) {
 	dest new File(buildDir, "jdk6tip.zip")
 }
 task downloadjava7(type: Download) {
-	src "http://hg.openjdk.java.net/jdk7u/jdk7u60/hotspot/archive/tip.zip"
+	src "http://hg.openjdk.java.net/jdk7u/jdk7u/hotspot/archive/tip.zip"
 	dest new File(buildDir, "jdk7tip.zip")
 }
 task downloadjava8(type: Download) {
